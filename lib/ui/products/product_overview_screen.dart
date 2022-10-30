@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:myshop/ui/cart/cart_screen.dart';
-import 'package:myshop/ui/products/products_manager.dart';
+import 'package:myshop/ui/screens.dart';
 import 'package:provider/provider.dart';
-
+import '../cart/cart_manager.dart';
 import 'products_grid.dart';
 import '../shared/app_drawer.dart';
-import '../cart/cart_manager.dart';
 import 'top_right_badge.dart';
 
 enum FilterOptions { favorites, all }
 
-class ProductsOverviewScreen extends StatefulWidget {
-  const ProductsOverviewScreen({super.key});
+class ProductsOverViewScreen extends StatefulWidget {
+  const ProductsOverViewScreen({super.key});
 
   @override
-  State<ProductsOverviewScreen> createState() => _ProductsOverviewScreenState();
+  State<ProductsOverViewScreen> createState() => _ProductsOverViewScreenState();
 }
 
-class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
+class _ProductsOverViewScreenState extends State<ProductsOverViewScreen> {
   final _showOnlyFavorites = ValueNotifier<bool>(false);
   late Future<void> _fetchProducts;
 
@@ -32,16 +30,21 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('MyShop'),
-        actions: <Widget>[buildProductFilterMenu(), buildShoppingCartIcon()],
+        actions: <Widget>[
+          buildProductFilterMenu(),
+          buildShoppinCartIcon(),
+        ],
       ),
       drawer: const AppDrawer(),
       body: FutureBuilder(
         future: _fetchProducts,
-        builder:(context, snapshot){
-          if(snapshot.connectionState == ConnectionState.done){
-            return ValueListenableBuilder<bool>(valueListenable: _showOnlyFavorites , builder: (context, onlyFavorites, child){
-              return ProductsGrid(onlyFavorites);
-            });
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return ValueListenableBuilder<bool>(
+                valueListenable: _showOnlyFavorites,
+                builder: (context, onlyFavorites, child) {
+                  return ProductsGrid(onlyFavorites);
+                });
           }
           return const Center(
             child: CircularProgressIndicator(),
@@ -51,21 +54,17 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
     );
   }
 
-  Widget buildShoppingCartIcon() {
-    return Consumer<CartManager>(
-      builder: (ctx, cartManager, child) {
-        return TopRightBadge(
-          data: CartManager().productCount,
-          child: IconButton(
-            icon: const Icon(
-              Icons.shopping_cart,
-            ),
-            onPressed: () {
-              Navigator.of(context).pushNamed(CartScreen.routeName);
-            },
-          ),
-        );
-      },
+  Widget buildShoppinCartIcon() {
+    return TopRightBadge(
+      data: CartManager().productCount,
+      child: IconButton(
+        icon: const Icon(
+          Icons.shopping_cart,
+        ),
+        onPressed: () {
+          Navigator.of(context).pushNamed(CartScreen.routeName);
+        },
+      ),
     );
   }
 
@@ -91,23 +90,8 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         const PopupMenuItem(
           value: FilterOptions.all,
           child: Text('Show All'),
-        )
+        ),
       ],
     );
   }
 }
-
-// class _ProductsOverviewScreenState extends State<ProductsOverviewScreen>{
-//   final _showOnlyFavorites = ValueNotifier<bool>(false);
-//   late Future<void> _fetchProducts;
-
-//   @override 
-//   void initState(){
-//     super.initState();
-//     _fetchProducts = context.read<ProductsManager>().fetchProducts();
-//   }
-//   @override 
-//   Widget build(BuildContext context){
-
-//   }
-// }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:myshop/ui/shared/dialog_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:myshop/ui/shared/dialog_utils.dart';
+ 
 import '../../models/product.dart';
 import '../shared/dialog_utils.dart';
+
 import 'products_manager.dart';
 
 class EditProductScreen extends StatefulWidget {
@@ -64,6 +66,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   Future<void> _saveForm() async {
+  try {
+    final productsManager = context.read<ProductsManager>();
+      if(_editedProduct.id != null){
+       await productsManager.updateProduct(_editedProduct);
+      }else{
+        await productsManager.addProduct(_editedProduct);
+      }
+    }catch(error){
+      await showErrorDialog(context, 'Something went wrong');
+    }
+
     final isValid = _editForm.currentState!.validate();
     if(!isValid){
       return;
@@ -72,16 +85,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     setState(() {
       _isLoading = true;
     });
-    try{
-      final productsManager = context.read<ProductsManager>();
-      if(_editedProduct.id != null){
-        productsManager.updateProduct(_editedProduct);
-      }else{
-        productsManager.addProduct(_editedProduct);
-      }
-    }catch(error){
-      await showErrorDialog(context, 'Something went wrong');
-    }
+
+
     setState(() {
       _isLoading = false;
     });

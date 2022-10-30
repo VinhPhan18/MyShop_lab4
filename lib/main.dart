@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:myshop/ui/orders/orders_screen.dart';
-// import 'package:myshop/ui/products/edit_product_screen.dart';
-// import 'package:myshop/ui/products/product_overview_screen.dart';
-// import 'package:myshop/ui/products/products_manager.dart';
-//import 'package:myshop/ui/products/user_products_screen.dart';
+import 'package:myshop/ui/orders/orders_screen.dart';
+import 'package:myshop/ui/products/edit_product_screen.dart';
+import 'package:myshop/ui/products/user_products_screen.dart';
+import 'package:provider/provider.dart';
 import 'ui/screens.dart';
 Future<void> main() async {
   // (1) Load the .env file
@@ -14,51 +12,53 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) :super(key: key);
-  
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-        return MultiProvider(
+    return MultiProvider(
       providers: [
-        // (2) Create the authmanage
+        // (2) Create and provide AuthManager
         ChangeNotifierProvider(
-          create: (context) => AuthManager() 
+          create: (context) => AuthManager(),
         ),
+        ChangeNotifierProxyProvider<AuthManager, ProductsManager>(
+            create: (ctx) => ProductsManager(),
+            update: (ctx, authManager, productsManager) {
+              productsManager!.authToken = authManager.authToken;
+              return productsManager;
+            },
+          ),
         ChangeNotifierProvider(
-          create: (ctx) => ProductsManager(),
+          create: (ctx) => CartManager(),
         ),
         ChangeNotifierProvider(
           create: (ctx) => OrdersManager(),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => CartManager(),
-        ),
       ],
-              // (3)) Consume the AuthManager  insatnce
-            child: Consumer<AuthManager>(
-              builder: (ctx, authManager, child){
-                return MaterialApp(
-                  title: 'My Shop',
-                  debugShowCheckedModeBanner: false,
-                  theme: ThemeData(
-                    fontFamily: 'Lato',
-                    colorScheme: ColorScheme.fromSwatch(
-                      primarySwatch: Colors.purple,
-                    ).copyWith(
-                      secondary: Colors.deepOrange,
-                    ),
-                  ),
-          home: authManager.isAuth 
-                    ? const ProductsOverviewScreen() 
-                    : FutureBuilder(
-                      future: authManager.tryAutoLogin(),
-                      builder: (context, snapshot) {
-                        return snapshot.connectionState == ConnectionState.waiting 
-                        ? const SplashScreen()
-                        : const AuthScreen();
-                },
-                    ),
-          routes: {
+      child: Consumer<AuthManager>(
+        builder: (context, authManager, child) {
+          return MaterialApp(
+        title: 'My Shop',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+            fontFamily: 'Lato',
+            colorScheme:
+                ColorScheme.fromSwatch(primarySwatch: Colors.purple).copyWith(
+              secondary: Colors.deepOrange,
+            ),
+            ),
+        home: authManager.isAuth
+          ? const ProductsOverviewScreen()
+          : FutureBuilder(
+            future: authManager.tryAutoLogin(),
+            builder: (context, snapshot) {
+             return snapshot.connectionState == ConnectionState.waiting  
+             ? const SplashScreen() 
+             :const AuthScreen();
+            },
+            ),
+        routes: {
           CartScreen.routeName: (ctx) => const CartScreen(),
           OrdersScreen.routeName: (ctx) => const OrdersScreen(),
           UserProductsScreen.routeName: (ctx) => const UserProductsScreen(),
@@ -80,19 +80,104 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (ctx) {
                 return EditProductScreen(
-                  productId != null 
-                  ? ctx.read<ProductsManager>().findById(productId)
-                  :null,
+                  productId != null ?
+                  ctx.read<ProductsManager>().findById(productId):null,
                 );
               },
             );
           }
           return null;
-            },
-          );
-        }),
+      
+        }
         );
+      
+        },
+      ),
+    );
   }
 }
 
- 
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+
+  void _incrementCounter() {
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Invoke "debug painting" (press "p" in the console, choose the
+          // "Toggle Debug Paint" action from the Flutter Inspector in Android
+          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+          // to see the wireframe for each widget.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'You have pushed the button this many times:',
+            ),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headline4,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}

@@ -3,12 +3,10 @@ import 'package:http/http.dart' as http;
 
 import '../models/product.dart';
 import '../models/auth_token.dart';
-
 import 'firebase_service.dart';
 
 class ProductsService extends FirebaseService {
   ProductsService([AuthToken? authToken]) : super(authToken);
-
   Future<List<Product>> fetchProducts([bool filterByUser = false]) async {
     final List<Product> products = [];
 
@@ -23,12 +21,10 @@ class ProductsService extends FirebaseService {
         print(productMap['error']);
         return products;
       }
-
       final userfavoritesUrl =
           Uri.parse('$databaseUrl/userFavorites/$userId.json?auth=$token');
       final userfavoriteRespone = await http.get(userfavoritesUrl);
       final userFavoritesMap = json.decode(userfavoriteRespone.body);
-      
       productMap.forEach((productId, product) {
         final isFavorite = (userFavoritesMap == null)
             ? false
@@ -69,7 +65,9 @@ class ProductsService extends FirebaseService {
       print(error);
       return null;
     }
-  } Future<bool> updateProduct(Product product) async {
+  }
+
+  Future<bool> updateProduct(Product product) async {
     try {
       final url = Uri.parse('$databaseUrl/{products.id}.json?auth=$token');
       final respone = await http.patch(

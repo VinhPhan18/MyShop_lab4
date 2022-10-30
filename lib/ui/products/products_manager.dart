@@ -1,11 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+
 import '../../models/product.dart';
 import '../../models/auth_token.dart';
+
 import '../../services/products_service.dart';
 
 class ProductsManager with ChangeNotifier {
   List<Product> _items = [
+
     // Product(
     //   id: 'p1',
     //   title: 'Red Shirt',
@@ -40,7 +43,9 @@ class ProductsManager with ChangeNotifier {
     //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     //   isFavorite: true,
     // ),
+
   ];
+  
   final ProductsService _productsService;
 
   ProductsManager([AuthToken? authToken])
